@@ -3,13 +3,37 @@
 
 import * as React from 'react'
 
-const useLocalStorageState = (key, defaultValue = '') => {
-  const [state, setState] = React.useState(
-    () => window.localStorage.getItem(key) || defaultValue,
-  )
+const useLocalStorageState = (
+  key,
+  defaultValue = '',
+  // This is a destructured options argument with defaults
+  {serialize = JSON.stringify, deserialize = JSON.parse} = {},
+) => {
+  const [state, setState] = React.useState(() => {
+    const valueInLocalStorage = window.localStorage.getItem(key)
+    if (valueInLocalStorage) {
+      // Make sure the item retrieved from local storage is parsed
+      return deserialize(valueInLocalStorage)
+    }
+    return typeof defaultValue === 'function' ? defaultValue() : defaultValue
+  })
+
+  // Create a ref to the key in case it is changed
+  const prevKeyRef = React.useRef(key)
+
   React.useEffect(() => {
-    window.localStorage.setItem(key, state)
-  }, [key, state])
+    const prevKey = prevKeyRef.current
+
+    // We want to check if the prevKey matches the key. If not
+    // that means the key has changed, so we remove the old key
+    // and set the key to the current key
+    if (prevKey !== key) {
+      window.localStorage.removeItem(prevKey)
+    }
+    prevKeyRef.current = key
+    // Handle the passing of non-string data types
+    window.localStorage.setItem(key, serialize(state))
+  }, [key, serialize, state])
   return [state, setState]
 }
 
