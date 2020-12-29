@@ -34,10 +34,10 @@ function Board({onClick, squares}) {
 }
 
 function Game() {
-  const [currentStep, setCurrentStep] = useLocalStorageState('step', 0)
   const [history, setHistory] = useLocalStorageState('history', [
     Array(9).fill(null),
   ])
+  const [currentStep, setCurrentStep] = useLocalStorageState('step', 0)
 
   const currentSquares = history[currentStep]
   const nextValue = calculateNextValue(currentSquares)
@@ -50,8 +50,8 @@ function Game() {
     }
     const newHistory = history.slice(0, currentStep + 1)
     const squaresCopy = [...currentSquares]
-    squaresCopy[square] = nextValue
 
+    squaresCopy[square] = nextValue
     setHistory([...newHistory, squaresCopy])
     setCurrentStep(newHistory.length)
   }
@@ -62,7 +62,7 @@ function Game() {
   }
 
   const moves = history.map((stepSquares, step) => {
-    const description = step === 0 ? `Go to game start` : `Go to move #${step}`
+    const description = step ? `Go to move #${step}` : `Go to game start`
     const isCurrentStep = step === currentStep
     return (
       <li>
